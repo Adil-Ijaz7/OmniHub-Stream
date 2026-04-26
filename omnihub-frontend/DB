@@ -1,0 +1,142 @@
+OmniHub Streaming Service Database Design and Backend Integration Report
+
+1. Overview and Scope
+This design supports a Netflix-style streaming service with:
+- Content catalog for movies and TV shows (including episodes)
+- User accounts and multi-profile support
+- Subscription and payment tracking
+- Watch history, favorites/watchlist, ratings/reviews
+- Search and recommendation-ready metadata (genre + cast)
+
+Implemented stack:
+- MySQL 8+ relational schema
+- Node.js/Express backend with JWT authentication
+- React frontend login/registration and authenticated favorites/history operations
+
+2. Assumptions
+- One account can have multiple profiles.
+- Content source IDs come from TMDB (tmdb_id stored as business key).
+- Ratings are on a 1.0-5.0 scale.
+- Subscription status controls access to watch activity logging.
+- Favorites and watchlist are user-scoped.
+- TV episodes are tracked by season_number + episode_number.
+
+3. ER Diagram (Logical)
+```mermaid
+erDiagram
+		USERS ||--o{ PROFILES : owns
+		USERS ||--o{ USER_SUBSCRIPTIONS : has
+		SUBSCRIPTION_PLANS ||--o{ USER_SUBSCRIPTIONS : defines
+		USER_SUBSCRIPTIONS ||--o{ SUBSCRIPTION_PAYMENTS : billed_by
+
+		USERS ||--o{ WATCH_HISTORY : records
+		PROFILES ||--o{ WATCH_HISTORY : via_profile
+
+		USERS ||--o{ RATINGS_REVIEWS : writes
+		USERS ||--o{ USER_FAVORITES : saves
+		USERS ||--o{ WATCHLIST : queues
+
+		MEDIA_CONTENT ||--o{ EPISODES : contains
+		MEDIA_CONTENT ||--o{ CONTENT_GENRES : tagged
+		GENRES ||--o{ CONTENT_GENRES : maps
+
+		MEDIA_CONTENT ||--o{ CONTENT_CAST : has
+		PEOPLE ||--o{ CONTENT_CAST : appears_in
+```
+
+4. Relational Schema (Implemented)
+Core account/subscription tables:
+- USERS(user_id PK, full_name, email UNIQUE, password_hash, subscription_status, created_at)
+- PROFILES(profile_id PK, user_id FK, profile_name, maturity_level, UNIQUE(user_id, profile_name))
+- SUBSCRIPTION_PLANS(plan_id PK, plan_code UNIQUE, plan_name, monthly_price, max_profiles, max_stream_quality)
+- USER_SUBSCRIPTIONS(subscription_id PK, user_id FK, plan_id FK, status, started_at, expires_at, auto_renew)
+- SUBSCRIPTION_PAYMENTS(payment_id PK, subscription_id FK, amount, currency, billing_cycle, payment_status, payment_date, transaction_reference)
+
+Catalog tables:
+- MEDIA_CONTENT(content_id PK, tmdb_id UNIQUE, content_type, title, description, release_date, language_code, poster_path, backdrop_path, runtime_minutes)
+- EPISODES(episode_id PK, content_id FK, season_number, episode_number, title, description, air_date, runtime_minutes, UNIQUE(content_id, season_number, episode_number))
+- GENRES(genre_id PK, genre_name UNIQUE)
+- CONTENT_GENRES(content_id FK, genre_id FK, PK(content_id, genre_id))
+- PEOPLE(person_id PK, full_name, tmdb_person_id UNIQUE, profession)
+- CONTENT_CAST(content_id FK, person_id FK, role_name, billing_order, PK(content_id, person_id))
+
+Interaction tables:
+- WATCH_HISTORY(watch_id PK, user_id FK, profile_id FK, tmdb_id, media_type, season_number, episode_number, watched_at, duration_watched_seconds, duration_total_seconds, completed)
+- RATINGS_REVIEWS(rating_id PK, user_id FK, tmdb_id, media_type, rating_value, review_text, created_at, updated_at, UNIQUE(user_id, tmdb_id, media_type))
+- USER_FAVORITES(favorite_id PK, user_id FK, tmdb_id, media_type, title, poster_path, vote_average, UNIQUE(user_id, tmdb_id, media_type))
+- WATCHLIST(watchlist_id PK, user_id FK, tmdb_id, media_type, title, UNIQUE(user_id, tmdb_id, media_type))
+
+Compatibility table retained:
+- CONTENT(content_id PK, tmdb_id UNIQUE, title, description, release_year, poster_url, content_type)
+
+5. Integrity Constraints and Business Rules
+- Email uniqueness enforced in USERS.
+- Rating validity enforced with CHECK: rating_value between 1.0 and 5.0.
+- Favorites/watchlist duplicate prevention via composite unique constraints.
+- Episode uniqueness per show/season/episode enforced.
+- Foreign keys ensure referential integrity and cascade deletes for dependent records.
+- Trigger in SQL script blocks WATCH_HISTORY inserts for non-active users.
+
+6. Functional Dependencies and Normalization
+USERS:
+- user_id -> full_name, email, password_hash, subscription_status, created_at
+- email -> user_id, full_name, password_hash, subscription_status, created_at
+
+MEDIA_CONTENT:
+- content_id -> tmdb_id, content_type, title, description, release_date, language_code, poster_path, backdrop_path, runtime_minutes
+- tmdb_id -> content_id, content_type, title, ...
+
+RATINGS_REVIEWS:
+- (user_id, tmdb_id, media_type) -> rating_value, review_text, created_at, updated_at
+
+Normalization summary:
+- 1NF: All tables use atomic attributes (no repeating groups).
+- 2NF: Junction tables use full composite keys; non-key attributes fully depend on key.
+- 3NF: Derived/multi-valued concepts split out (genres, cast, subscriptions, payments, ratings, history), removing update anomalies.
+
+7. Normalization Decisions Taken
+Initial denormalized idea (single user table with favorite titles/history text arrays) was decomposed into:
+- USER_FAVORITES and WATCH_HISTORY for repeatable user-content interactions
+- SUBSCRIPTION_PLANS + USER_SUBSCRIPTIONS + SUBSCRIPTION_PAYMENTS for billing lifecycle
+- GENRES/CONTENT_GENRES and PEOPLE/CONTENT_CAST for many-to-many modeling
+
+8. Sample Data Scenario
+Scenario:
+1) User registers via JWT endpoint.
+	 - USERS, PROFILES, USER_SUBSCRIPTIONS, SUBSCRIPTION_PAYMENTS rows are created.
+2) User saves two titles to favorites.
+	 - USER_FAVORITES gets two rows tied to same user_id.
+3) User plays one movie and one TV episode.
+	 - WATCH_HISTORY stores two records; TV row includes season_number and episode_number.
+4) User rates one movie as 4.5 with review text.
+	 - RATINGS_REVIEWS stores one upsert row for that user-content pair.
+
+9. Implemented Backend and Frontend Functionality
+Backend implemented:
+- JWT auth routes:
+	- POST /api/auth/register
+	- POST /api/auth/login
+	- GET /api/auth/me
+- Plans route:
+	- GET /api/subscription/plans
+- User-scoped favorites:
+	- GET /api/favorites (auth)
+	- POST /api/favorites (auth)
+	- DELETE /api/favorites/:tmdbId?media_type=movie|tv (auth)
+- Watch history:
+	- POST /api/watch-history (auth)
+	- GET /api/watch-history (auth)
+- Ratings/reviews:
+	- POST /api/ratings (auth)
+	- GET /api/ratings/:tmdbId?media_type=movie|tv
+
+Frontend implemented:
+- Login/register screen with JWT session storage
+- Auto session restore via /api/auth/me
+- Logout flow
+- Authenticated favorites load/save
+- Watch history post when user starts playback
+
+10. SQL Script Location
+Full executable schema script is available in:
+- streaming-backend/database_schema.sql

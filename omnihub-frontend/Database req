@@ -1,0 +1,26 @@
+ Build a database schema for a movie streaming service (e.g., a simplified Netflix-style system). The database will manage a catalog of movies (and TV shows), user accounts and subscriptions, and user interactions such as viewing history and ratings. The focus is on designing the data backend that supports streaming content management and user activity tracking.
+Key Functional Requirements: [w3resource.com]
+Maintain a catalog of content: store details of each movie/TV show (title, genre, release year, etc., and possibly multiple episodes for shows).
+Manage user accounts with subscription info: user profiles, contact details, subscription status (active/inactive), and plan type (for example, basic/premium).
+Track what content users watch: whenever a user streams a movie or episode, record that in a watch history (with timestamp, duration watched, etc.). Possibly allow users to have a watchlist or list of favorites.
+Allow user ratings or reviews for content: users can give a rating (and/or text review) for movies they’ve watched, and the system should store these for other users to see aggregated ratings.
+Support search and recommendation queries (this influences design by needing genre tags, actor info, etc., but full recommendation algorithms are beyond scope; however, data should accommodate it).
+Handle payments for subscriptions: record user subscriptions or payments (plan type, billing cycle, payment history) so it’s clear if a user is active.
+Suggested Entities & Relationships:
+User – user account data (name, email, password, etc., subscription type, status).
+Profile – (if implementing profiles per account, e.g., Netflix style, one User can have multiple Profiles for different family members with separate preferences). If not, a User itself can be considered a viewer.
+Movie (or Content) – each movie or show with attributes (title, description, genre, release_year, etc.). Possibly an attribute or a related entity for episodes if TV shows are included (e.g., an Episode entity linked to a Series).
+WatchHistory – records that a given User (or Profile) watched a given Movie/Episode at a certain date/time, perhaps with fields like duration or if completed.
+Rating/Review – a user’s rating or review for a movie (User and Movie many-to-many relationship, with extra attribute rating and/or review text).
+SubscriptionPayment – records of payments or subscriptions for each user (date, amount, plan, etc.), to manage billing.
+Optional: Actor/Cast – if recommending to include more complexity, have an entity for Actors/Directors and a relationship to Movie (many-to-many: a movie has many actors, an actor stars in many movies) to enable queries like “other movies featuring this actor”.
+Relationships: One User can have many WatchHistory records (for each content watched). One User can rate/review many movies, and each movie can be rated by many users (many-to-many via Rating). If Profiles are used, one User owns multiple Profiles, and Profiles create watch histories and ratings. Each SubscriptionPayment is linked to one User.
+Expected Deliverables:
+Overview of system requirements for the streaming service, including assumptions (e.g., whether multiple profiles per account, whether TV episodes are handled, etc.).
+ER diagram capturing all chosen entities (User, Movie, etc.) and their relationships. Show primary keys and any foreign keys (e.g., WatchHistory will have foreign keys to User and Movie). Include any weak entities or subtype relationships if modeling something like profiles or series/episodes.
+Relational schema outlining the tables and columns derived from the ER model, with keys and foreign key constraints (e.g., USER table, MOVIE table, WATCH_HISTORY(user_id, movie_id, watched_on, ...), etc.).
+Description of integrity constraints, such as ensuring that only active subscribers appear in WatchHistory perhaps, or that ratings are 1–5 only, etc. (business rules to note).
+Functional dependencies analysis and normalization: Verify that each table is free of update anomalies (for instance, movie details are stored once in the Movie table, user info stored once in User table, etc., to avoid redundancy). The design should naturally lend itself to 3NF; explain decisions like separating ratings out of the user or movie table.
+If any normalization steps were taken from an initial design (e.g., initially thinking of storing a list of watched movies in a user record, then converting that to a separate WatchHistory table to achieve 1NF), describe those.
+Sample data scenario: e.g., illustrate a user watching two movies and rating one, to show how the data would be recorded across the tables.
+Final report with required formatting (cover page, etc.), and sections clearly identifying the above deliverables (ER design, schema, FDs/normalization).

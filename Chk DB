@@ -1,0 +1,74 @@
+Use these commands in PowerShell to check your MySQL database quickly.
+
+1. Open MySQL CLI
+```powershell
+mysql -u root -p
+```
+Enter your password (`12345` based on your .env).
+
+2. Select DB and list all tables
+```sql
+USE omnihub_streaming;
+SHOW TABLES;
+```
+
+3. Check table structure
+```sql
+DESCRIBE users;
+DESCRIBE profiles;
+DESCRIBE media_content;
+DESCRIBE user_favorites;
+DESCRIBE watch_history;
+DESCRIBE ratings_reviews;
+DESCRIBE subscription_requests;
+```
+
+4. See sample data (latest rows)
+```sql
+SELECT * FROM users ORDER BY user_id DESC LIMIT 10;
+SELECT * FROM profiles ORDER BY profile_id DESC LIMIT 10;
+SELECT * FROM media_content ORDER BY content_id DESC LIMIT 10;
+SELECT * FROM user_favorites ORDER BY favorite_id DESC LIMIT 10;
+SELECT * FROM watch_history ORDER BY watch_id DESC LIMIT 10;
+SELECT * FROM ratings_reviews ORDER BY rating_id DESC LIMIT 10;
+SELECT * FROM subscription_requests ORDER BY request_id DESC LIMIT 10;
+SELECT * FROM user_subscriptions ORDER BY subscription_id DESC LIMIT 10;
+SELECT * FROM subscription_payments ORDER BY payment_id DESC LIMIT 10;
+```
+
+5. Check your admin/pro user specifically
+```sql
+SELECT user_id, full_name, email, role, subscription_status
+FROM users
+WHERE LOWER(email) = 'adilijaz227@gmail.com';
+
+SELECT us.subscription_id, us.status, sp.plan_code, sp.plan_name, us.started_at, us.expires_at
+FROM user_subscriptions us
+JOIN subscription_plans sp ON us.plan_id = sp.plan_id
+JOIN users u ON us.user_id = u.user_id
+WHERE LOWER(u.email) = 'adilijaz227@gmail.com'
+ORDER BY us.subscription_id DESC
+LIMIT 5;
+```
+
+6. Check per-profile favorites/history (important for your latest change)
+```sql
+SELECT uf.favorite_id, uf.user_id, uf.profile_id, p.profile_name, uf.title, uf.media_type, uf.created_at
+FROM user_favorites uf
+LEFT JOIN profiles p ON uf.profile_id = p.profile_id
+ORDER BY uf.favorite_id DESC
+LIMIT 20;
+
+SELECT wh.watch_id, wh.user_id, wh.profile_id, p.profile_name, wh.tmdb_id, wh.media_type, wh.watched_at
+FROM watch_history wh
+LEFT JOIN profiles p ON wh.profile_id = p.profile_id
+ORDER BY wh.watch_id DESC
+LIMIT 20;
+```
+
+7. Exit MySQL
+```sql
+EXIT;
+```
+
+If `mysql` command is not recognized, tell me and I’ll give you commands using full MySQL bin path.

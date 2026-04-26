@@ -1,0 +1,137 @@
+What I added
+
+Full backend schema support + APIs in server.js
+
+JWT authentication:
+
+POST /api/auth/register
+POST /api/auth/login
+GET /api/auth/me
+Subscription plans endpoint:
+
+GET /api/subscription/plans
+User-scoped favorites (now per logged-in user, not global):
+
+GET /api/favorites (auth)
+POST /api/favorites (auth)
+DELETE /api/favorites/:tmdbId?media_type=movie|tv (auth)
+Watch history:
+
+POST /api/watch-history (auth)
+GET /api/watch-history (auth)
+Ratings/reviews:
+
+POST /api/ratings (auth)
+GET /api/ratings/:tmdbId?media_type=movie|tv
+Database bootstrap now creates all required tables:
+
+users, profiles, subscription plans/subscriptions/payments
+media catalog + episodes + genres + cast
+favorites, watchlist, watch_history, ratings_reviews
+Existing CONTENT cache flow was preserved for compatibility.
+
+SQL schema script in database_schema.sql
+
+Includes full relational schema (PK/FK/unique/check constraints).
+
+Includes active-subscriber trigger for watch-history rule.
+
+Includes seeded subscription plans.
+
+Includes sample scenario comments.
+
+Final report/deliverables document in DB
+
+Requirements overview + assumptions.
+
+ER diagram (Mermaid).
+
+Relational schema summary.
+
+Integrity constraints/business rules.
+
+FD + normalization analysis to 3NF.
+
+Normalization decisions from denormalized ideas.
+
+Sample data scenario.
+
+Implemented backend/frontend feature mapping.
+
+Frontend JWT login integration in App.jsx
+
+Added register/login screen.
+
+Session restore using token + /api/auth/me.
+
+Logout support.
+
+Favorites now call authenticated backend.
+
+Playback now records watch history (auth users).
+
+Config/dependencies updated
+
+Added jsonwebtoken and bcryptjs in package.json.
+
+Added JWT_SECRET in .env.
+
+Validation run
+
+npm install completed successfully in backend.
+Backend syntax check passed (node --check server.js).
+Frontend build passed (npm run build).
+Existing Tailwind minify warning remains unrelated to these changes.
+What you should do now
+
+Restart backend (npm run dev in streaming-backend) so new schema/auth routes are active.
+Open frontend and register a new account.
+Add favorites and confirm they appear only for that logged-in user.
+Play content and verify watch history endpoint stores activity.
+If you want, I can next add:
+
+A dedicated Watch History tab in UI.
+Profile switcher (multi-profile account support).
+Ratings UI (1–5 stars + review form) on each title.
+
+
+
+Implemented all three requested features.
+
+Dedicated Watch History tab in UI
+Added a new sidebar tab (history) and a dedicated history grid view.
+History entries are fetched from backend and enriched with TMDB poster/title for display.
+“Play Again” opens the title directly.
+Updated file: App.jsx
+Profile switcher (multi-profile support)
+Added profile selector in header.
+Added “+ Profile” creation flow (prompt-based) with backend save.
+Selected profile is sent when recording watch history.
+Frontend updates: App.jsx
+Backend routes added:
+GET /api/profiles
+POST /api/profiles (includes plan max-profile limit check)
+Backend updates: server.js
+Ratings UI (1–5 stars + review form) per title
+Added rating panel inside player modal:
+star selection (1–5)
+review textarea
+submit button
+average rating and recent reviews preview
+Added backend endpoint to fetch current user’s own rating:
+GET /api/ratings/:tmdbId/me?media_type=movie|tv
+Frontend updates: App.jsx
+Backend updates: server.js
+Validation:
+
+No editor errors in frontend/backend files.
+Backend syntax check passed.
+Frontend build passed.
+Note:
+
+The Tailwind @tailwind warning during build is unchanged from before and unrelated to these new features.
+Next step:
+
+Restart backend server so the new routes are active.
+Log in, switch/create profiles, play a title, then open History tab.
+Open any title modal and submit a rating/review to verify end-to-end flow.

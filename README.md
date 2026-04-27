@@ -1,123 +1,55 @@
-# 🚀 OmniHub-Stream
+# OmniHub-Stream
 
-**OmniHub-Stream** is a modern, scalable streaming platform designed to aggregate, process, and deliver data or media streams efficiently in real-time.
+OmniHub-Stream is a JavaScript-based project for real-time streaming and processing.
 
----
+## What’s in this repository
+- **Frontend/UI**: HTML/CSS/JavaScript
+- **Streaming/real-time**: (depends on configuration)
 
-## ✨ Features
+## Prerequisites
+- **Node.js** (LTS recommended)
+- **npm** (comes with Node)
 
-- ⚡ Real-time streaming & processing  
-- 🔗 Multi-source integration (APIs, feeds, services)  
-- 📊 Scalable architecture  
-- 🧩 Modular design  
-- 🔐 Secure data handling  
-- 🌐 API-ready  
+## Setup
+1. Clone the repository
+   ```bash
+   git clone https://github.com/Adil-Ijaz7/OmniHub-Stream.git
+   cd OmniHub-Stream
+   ```
 
----
+2. Install dependencies
+   ```bash
+   npm install
+   ```
 
-## 🛠️ Tech Stack
+## Run
+Because `package.json` was not found at the repository root (or is not accessible), the exact scripts may differ. Try the common options below:
 
-- Backend: Node.js / Python / FastAPI / Express  
-- Frontend: React / Next.js *(if applicable)*  
-- Streaming: WebSockets / Kafka / Redis  
-- Database: MongoDB / PostgreSQL  
-
----
-
-## 📦 Installation
-
-```bash
-git clone https://github.com/Adil-Ijaz7/OmniHub-Stream.git
-cd OmniHub-Stream
-then frontend and backend needs
-npm install
-````
-
----
-
-## ▶️ Usage
-
+### Option 1: Development mode
 ```bash
 npm run dev
-for both frontend and backend
 ```
 
-Open:
-
-```
-http://localhost:3000
-```
-
----
-
-## 📁 Project Structure
-
-```
-OmniHub-Stream/
-│── src/
-│── api/
-│── components/
-│── utils/
-│── config/
-│── tests/
-│── README.md
-```
-
----
-
-## 🔌 API Endpoints
-
-| Method | Endpoint     | Description    |
-| ------ | ------------ | -------------- |
-| GET    | /streams     | Fetch streams  |
-| POST   | /streams     | Create stream  |
-| GET    | /streams/:id | Stream details |
-
----
-
-## 🧪 Testing
-
+### Option 2: Start
 ```bash
-npm test
-# or
-pytest
+npm start
 ```
 
----
-
-## 🚀 Roadmap
-
-* [ ] Authentication
-* [ ] Performance improvements
-* [ ] Monitoring dashboard
-* [ ] Cloud deployment
-
----
-
-## 🤝 Contributing
-
+### Option 3: If this is a static site
+Open `index.html` in your browser, or use a local server:
 ```bash
-git checkout -b feature/your-feature
-git commit -m "Add feature"
-git push origin feature/your-feature
+npx serve .
 ```
 
----
+Then open the printed local URL (commonly `http://localhost:3000`).
 
-## 📄 License
+## Troubleshooting
+- If `npm run dev` fails, run `npm run` to list available scripts.
+- If there is no Node app, look for `index.html` or a `public/` folder.
 
+## License
 MIT License
 
----
-
-## 👤 Author
-
-**Adil Ijaz**
-GitHub: [https://github.com/Adil-Ijaz7](https://github.com/Adil-Ijaz7)
-
-```
-
----
-
-If you want a **:contentReference[oaicite:0]{index=0}**, I can upgrade this next.
-```
+## Author
+Adil Ijaz
+GitHub: https://github.com/Adil-Ijaz7
